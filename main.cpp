@@ -2,23 +2,30 @@
 
 #include <iostream>
 
-const char *get_hosts(int argc, char **argv)
+CassCluster *connect_cluster(int argc, char **argv)
 {
-    if (argc > 1)
-        return argv[1];
+    CassCluster *cluster = cass_cluster_new();
+    /* Add contact points */
+    if (argc > 2)
+    {
+        if (cass_cluster_set_cloud_secure_connection_bundle(cluster, argv[1]) != CASS_OK)
+            fprintf(stderr, "Unable to configure cloud using the secure connection bundle: %s\n",
+                    argv[1]);
+        else
+            /* Set credentials provided when creating your database */
+            cass_cluster_set_credentials(cluster, "token", argv[2]);
+    }
     else
-        return "127.0.0.1";
+        cass_cluster_set_contact_points(cluster, "127.0.0.1");
+    return cluster;
 }
 
 int main(int argc, char **argv)
 {
     /* Setup and connect to cluster */
     CassFuture *connect_future = NULL;
-    CassCluster *cluster = cass_cluster_new();
+    CassCluster *cluster = connect_cluster(argc, argv);
     CassSession *session = cass_session_new();
-    const char *hosts = get_hosts(argc, argv);
-    /* Add contact points */
-    cass_cluster_set_contact_points(cluster, hosts);
 
     /* Provide the cluster object as configuration to connect the session */
     connect_future = cass_session_connect(session, cluster);
@@ -84,5 +91,4 @@ int main(int argc, char **argv)
     std::cout << "Hello, world!\n";
 
     return 0;
-
 }
