@@ -30,3 +30,8 @@
 *.exe
 *.out
 *.app
+
+# Build and environmens folders
+build/
+.vscode/
+main.dSYM/
