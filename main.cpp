@@ -135,12 +135,8 @@ void connect_keyspace(CassSession *session)
     ok(cass_session_execute(session, use_stmt), use_keyspace_query.c_str());
 }
 
-void check_and_drop_table(CassSession *session);
-
 void recreate_table(CassSession *session)
 {
-    check_and_drop_table(session);
-
     printf("Creating table sensors_by_network if needed \n");
     const char *create_table_query = "CREATE TABLE IF NOT EXISTS sensors_by_network ( \
     	network     text, \
@@ -225,8 +221,8 @@ void read(CassSession *session)
 int main(int argc, char **argv)
 {
     CassError error_code = CASS_OK;
-    CassCluster *cluster = cass_cluster_new(); // I need it here to free it
-    CassSession *session = cass_session_new(); // Session is used everywhere
+    CassCluster *cluster = cass_cluster_new();
+    CassSession *session = cass_session_new();
 
     try
     {
@@ -252,30 +248,4 @@ int main(int argc, char **argv)
     cass_session_free(session);
 
     return error_code;
-}
-
-void check_and_drop_table(CassSession *session)
-{
-    std::string query = "SELECT table_name FROM system_schema.tables WHERE keyspace_name = '";
-    query.append(ks_name);
-    query.append("' and table_name = '");
-    query.append(table_name);
-    query.append("'");
-    printf("Checking if table exists with query: %s\n", query.c_str());
-    CassStatement *statement = cass_statement_new(query.c_str(), 0);
-
-    CassFuture *result_future = cass_session_execute(session, statement);
-    ok(result_future,
-       "Unable to run query: '%.*s'\n");
-
-    const CassResult *result = cass_future_get_result(result_future);
-    if (cass_result_row_count(result) > 0)
-    {
-        std::string drop_table_query = "DROP TABLE ";
-        drop_table_query.append(full_name);
-        printf("Dropping the table with query: %s\n", drop_table_query.c_str());
-        CassStatement *drop_stmt = cass_statement_new(drop_table_query.c_str(), 0);
-        ok(cass_session_execute(session, drop_stmt), drop_table_query.c_str());
-    }
-    cass_result_free(result);
 }
