@@ -3,11 +3,6 @@
 #include <iostream>
 #include <fstream>
 
-const char *ks_name = "sensor_data";
-const char *table_name = "sensors_by_network";
-
-const char *full_name = "sensor_data.sensors_by_network";
-
 void ok(CassError error, const char *fmt...)
 {
     va_list arg;
@@ -128,9 +123,8 @@ void read_version(CassSession *session)
 
 void connect_keyspace(CassSession *session)
 {
-    printf("Changing to the keyspace %s\n", ks_name);
-    std::string use_keyspace_query = "USE ";
-    use_keyspace_query.append(ks_name);
+    printf("Changing to the keyspace sensor_data\n");
+    std::string use_keyspace_query = "USE sensor_data";
     CassStatement *use_stmt = cass_statement_new(use_keyspace_query.c_str(), 0);
     ok(cass_session_execute(session, use_stmt), use_keyspace_query.c_str());
 }
