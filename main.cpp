@@ -92,7 +92,7 @@ void connect_cluster(int argc, char **argv, CassCluster *cluster, CassSession *s
     /* Provide the cluster object as configuration to connect the session */
     ok(cass_session_connect(session, cluster), "Unable to connect: '%.*s'\n");
 
-    if (argc == 1)
+    if (argc <= 2)
         create_keyspace(session);
 }
 
@@ -149,7 +149,9 @@ void simple_insert(CassSession *session)
 
 void prepared_insert(CassSession *session)
 {
-    const char *insert_query = "INSERT INTO sensor_data.sensors_by_network(network, sensor, temperature) VALUES (?, ?, ?)";
+    const char *insert_query = "INSERT INTO sensor_data.sensors_by_network \
+        (network, sensor, temperature) \
+        VALUES (?, ?, ?)";
     CassFuture *prepare_future = cass_session_prepare(session, insert_query);
     ok(prepare_future, insert_query);
     const CassPrepared *prepared = cass_future_get_prepared(prepare_future);
@@ -207,6 +209,7 @@ void read(CassSession *session)
 {
     printf("============================\n");
     printf("network, sensor, temperature\n");
+    printf("============================\n");
     read_by_key(session, "volcano");
     read_by_key(session, "forest");
     printf("\n");
